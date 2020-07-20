@@ -23,7 +23,7 @@ int depthwise_convolutional_out_width(depthwise_convolutional_layer l)
 }
 
 
-//��ʱ���ݿռ���?
+//锟斤拷时锟斤拷锟捷空硷拷锟叫?
 static size_t get_workspace_size(layer l){
 #ifdef CUDNN
     if(gpu_index >= 0){
@@ -72,7 +72,7 @@ void cudnn_depthwise_convolutional_setup(layer *l)
     cudnnSetTensor4dDescriptor(l->dstTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, l->batch, l->out_c, l->out_h, l->out_w); 
     cudnnSetTensor4dDescriptor(l->normTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, l->out_c, 1, 1); 
     cudnnSetFilter4dDescriptor(l->weightDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, 1, l->c, l->size, l->size);
-    cudnnSetConvolution2dDescriptor(l->convDesc, l->pad, l->pad, l->stride, l->stride, 1, 1, CUDNN_CROSS_CORRELATION);
+    cudnnSetConvolution2dDescriptor(l->convDesc, l->pad, l->pad, l->stride, l->stride, 1, 1, CUDNN_CROSS_CORRELATION,CUDNN_DATA_FLOAT);
     /*cudnnGetConvolutionForwardAlgorithm(cudnn_handle(),
             l->srcTensorDesc,
             l->weightDesc,
@@ -310,7 +310,7 @@ void test_depthwise_convolutional_layer()
 	depthwise_convolutional_layer depthwise_conv1 = make_depthwise_convolutional_layer(net.batch, net.h, net.w, net.c, 3, 1, 0, RELU, 0);
 	avgpool_layer global_avgpool1 = make_avgpool_layer(net.batch, depthwise_conv1.out_w, depthwise_conv1.out_h, depthwise_conv1.n);
 	softmax_layer softmax_1 = make_softmax_layer(net.batch, depthwise_conv1.n, 1);
-	softmax_1.temperature = 1;//����ȱ��
+	softmax_1.temperature = 1;//锟斤拷锟斤拷缺锟斤拷
 	cost_layer cost_1 = make_cost_layer(net.batch, depthwise_conv1.n, SSE, 1);
 
 
@@ -355,7 +355,7 @@ void test_depthwise_convolutional_layer()
 		else {
 			layer prev = net.layers[i - 1];
 			net.input = prev.output;
-			net.delta = prev.delta;//�м������ָ�븳ֵ����������backward��ʱ����ʵ�Ǹ����˵�ǰ�����ǰ��һ�����������?
+			net.delta = prev.delta;//锟叫硷拷锟斤拷锟斤拷锟街革拷敫持碉拷锟斤拷锟斤拷锟斤拷锟斤拷锟絙ackward锟斤拷时锟斤拷锟斤拷实锟角革拷锟斤拷锟剿碉拷前锟斤拷锟斤拷锟角帮拷锟揭伙拷锟斤拷锟斤拷锟斤拷锟斤拷锟街?
 		}
 		net.index = i;
 		l.backward(l, net);
@@ -460,7 +460,7 @@ void forward_depthwise_convolutional_layer(depthwise_convolutional_layer l, netw
     }
 
 	int m = l.n;
-    activate_array(l.output, m*n*l.batch, l.activation);//�����ǰ�򴫵�
+    activate_array(l.output, m*n*l.batch, l.activation);//锟斤拷锟筋函锟斤拷前锟津传碉拷
 /*
 	for (int i = 0; i < l.batch*l.c*l.out_h*l.out_w; i++)
 	{
@@ -475,7 +475,7 @@ void backward_depthwise_convolutional_layer(depthwise_convolutional_layer l, net
     int m = l.n;
     int n = l.size*l.size;
     int k = l.out_w*l.out_h;
-	//�����������
+	//锟斤拷锟筋函锟斤拷锟斤拷锟斤拷锟斤拷
     gradient_array(l.output, m*k*l.batch, l.activation, l.delta);
 
     if(l.batch_normalize){
@@ -490,7 +490,7 @@ void backward_depthwise_convolutional_layer(depthwise_convolutional_layer l, net
 		{
 
 
-			//��Ȩ����
+			//锟斤拷权锟斤拷锟斤拷
 			float *aoffset = l.delta + c*l.out_h*l.out_w + b*l.n*l.out_h*l.out_w;
 			float *boffset = net.workspace;
 			float *coffset = l.weight_updates + c*l.size*l.size;
@@ -502,7 +502,7 @@ void backward_depthwise_convolutional_layer(depthwise_convolutional_layer l, net
 			im2col_cpu(im, 1, l.h, l.w,
 				l.size, l.stride, l.pad, boffset);
 			gemm(0, 1, 1, n, k, 1, aoffset, k, boffset, k, 1, coffset, n);
-			//�Ա������������󵼣�Ҳ������ԭʼ��Ȩ�أ������������΢������ͼ���о������
+			//锟皆憋拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟襟导ｏ拷也锟斤拷锟斤拷锟斤拷原始锟斤拷权锟截ｏ拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟轿拷锟斤拷锟斤拷锟酵硷拷锟斤拷芯锟斤拷锟斤拷锟斤拷
 
 			if (net.delta) {
 				aoffset = l.weights+ c*l.size*l.size;
